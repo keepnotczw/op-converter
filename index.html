@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OP Format Converter</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background: linear-gradient(to bottom right, #d7e8fc, #fbd6f5);
+            background-attachment: fixed;
+            background-size: cover;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s;
+            color: white;
+            position: relative;
+        }
+
+        .container:hover {
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #333333;
+        }
+
+        textarea,
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1px solid #dddddd;
+            border-radius: 6px;
+            background: #f8f8f8;
+            font-size: 1rem;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        textarea:focus,
+        input[type="text"]:focus {
+            border-color: #007bff;
+            background: #ffffff;
+            outline: none;
+        }
+
+        button {
+            display: inline-block;
+            background-image: linear-gradient(to right, #007bff, #ff69b4);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0 5px 15px 0;
+            transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-image: linear-gradient(to right, #0056b3, #ff479c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            background-image: linear-gradient(to right, #00408d, #ff2d7a);
+        }
+
+        .results-container {
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word; /* Automatically wrap text */
+            white-space: pre-wrap; /* Preserve spaces and line breaks */
+            overflow-y: auto; /* Add scrollbar */
+            max-height: 300px; /* Limit height */
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        .result-item {
+            padding: 8px;
+            border-bottom: 1px solid #eaeaea;
+            color: #555;
+            user-select: text; /* Allow content selection */
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            button {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+
+        /* macOS window controls */
+        .macos-window-controls {
+            display: flex;
+            justify-content: flex-start;
+            padding: 10px;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+        }
+
+        .macos-window-controls div {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+            cursor: pointer;
+        }
+
+        .red {
+            background-color: #ff5f57;
+        }
+
+        .yellow {
+            background-color: #ffbd2e;
+        }
+
+        .green {
+            background-color: #27c93f;
+        }
+    </style>
+    <script>
+        function extractData() {
+            const inputs = document.getElementById('dataInput').value.split('\n');
+            const results = [];
+            inputs.forEach(input => {
+                const openidRegex = /openid=([\w]+)/;
+                const accessTokenRegex = /access_token=([\w]+)/;
+                const openidMatch = input.match(openidRegex);
+                const accessTokenMatch = input.match(accessTokenRegex);
+                const openid = openidMatch ? openidMatch[1] : null;
+                const accessToken = accessTokenMatch ? accessTokenMatch[1] : null;
+                const additionalData = document.getElementById('additionalData').value || 'OP Data';
+
+                if (openid && accessToken) {
+                    const result = `${openid}|${accessToken}|${accessToken}|1|${additionalData}`;
+                    results.push(result);
+                }
+            });
+
+            const resultContainer = document.getElementById('results');
+            resultContainer.innerHTML = '';
+            results.forEach(result => {
+                const p = document.createElement('p');
+                p.textContent = result;
+                p.classList.add('result-item');
+                resultContainer.appendChild(p);
+            });
+
+            if (results.length === 0) {
+                alert('No valid data found');
+            } else {
+                alert('Data processing complete');
+            }
+        }
+
+        function copyAllResults() {
+            const results = document.querySelectorAll('.result-item');
+            let resultText = '';
+            results.forEach(item => {
+                resultText += `${item.textContent}\n`;
+            });
+
+            if (resultText) {
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(resultText).then(() => {
+                        alert('All results have been copied to the clipboard!');
+                    }).catch(err => {
+                        console.error('Copy failed:', err);
+                        alert('Copy failed, please manually copy the content!');
+                    });
+                } else {
+                    alert('Your browser does not support automatic copying, please copy manually!');
+                }
+            } else {
+                alert('No content to copy, please extract data first.');
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="macos-window-controls">
+            <div class="red"></div>
+            <div class="yellow"></div>
+            <div class="green"></div>
+        </div>
+        <h1>OP Format Converter</h1>
+        <textarea id="dataInput" rows="10" placeholder='Enter data line by line...'></textarea>
+        <input type="text" id="additionalData" placeholder="OP Data Number (Optional)">
+        <button onclick="extractData()"><i class="fas fa-cog"></i> Extract Data</button>
+        <button onclick="copyAllResults()"><i class="fas fa-copy"></i> Copy Results</button>
+        <h2>Processed Results:</h2>
+        <div id="results" class="results-container"></div>
+    </div>
+</body>
+
+</html>
